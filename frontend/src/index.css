@@ -1,0 +1,56 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-primary: #080c14;
+  --bg-secondary: #0d1424;
+  --bg-panel: #111827;
+  --bg-card: #162032;
+  --accent: #00ff41;
+  --accent-dim: #00aa2b;
+  --accent-glow: rgba(0, 255, 65, 0.15);
+  --danger: #ff4136;
+  --warning: #ffd700;
+  --text-primary: #e0ffe8;
+  --text-secondary: #7a9ba8;
+  --text-muted: #3a5068;
+  --border: rgba(0, 255, 65, 0.15);
+  --border-bright: rgba(0, 255, 65, 0.4);
+  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
+  --font-ui: 'Rajdhani', 'Arial', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-dim);
+  border-radius: 3px;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-ui);
+}
+
+input, textarea, select {
+  font-family: var(--font-mono);
+}

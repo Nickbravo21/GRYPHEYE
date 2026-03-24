@@ -1,0 +1,202 @@
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-bright);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.header-icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-icon svg {
+  filter: drop-shadow(0 0 6px var(--accent));
+}
+
+.header-title {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-shadow: 0 0 10px rgba(0,255,65,0.5);
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Main Content ─────────────────────────────────────────────────────────── */
+.app-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 0;
+  min-height: 0;
+}
+
+/* ── Left Panel ───────────────────────────────────────────────────────────── */
+.left-panel {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  min-height: calc(100vh - 62px);
+}
+
+/* ── Right Panel ──────────────────────────────────────────────────────────── */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* ── Section Labels ──────────────────────────────────────────────────────── */
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  color: var(--accent-dim);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Detect Button ───────────────────────────────────────────────────────── */
+.detect-btn {
+  width: 100%;
+  padding: 13px 20px;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.detect-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.12), transparent);
+  transition: left 0.4s ease;
+}
+
+.detect-btn:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.detect-btn:hover:not(:disabled) {
+  background: var(--accent-glow);
+  box-shadow: 0 0 16px rgba(0,255,65,0.25), inset 0 0 16px rgba(0,255,65,0.05);
+}
+
+.detect-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.detect-btn.processing {
+  border-color: var(--warning);
+  color: var(--warning);
+  animation: scanline 1.5s linear infinite;
+}
+
+@keyframes scanline {
+  0% { box-shadow: 0 0 0 rgba(255,215,0,0); }
+  50% { box-shadow: 0 0 12px rgba(255,215,0,0.3); }
+  100% { box-shadow: 0 0 0 rgba(255,215,0,0); }
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.app-footer {
+  padding: 8px 28px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .app-main {
+    grid-template-columns: 1fr;
+  }
+  .left-panel {
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
