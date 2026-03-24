@@ -94,7 +94,7 @@ export default function App() {
         <div className="header-logo">
           <div className="header-icon">{TARGET_ICON}</div>
           <div>
-            <div className="header-title">VISION TARGET TRACKER</div>
+            <div className="header-title">GRYPHEYE</div>
             <div className="header-subtitle">
               OPEN-VOCABULARY DETECTION · SEGMENTATION · TRACKING
             </div>
@@ -175,7 +175,7 @@ export default function App() {
       </main>
 
       <footer className="app-footer">
-        <span>VTT v1.0 · Grounding DINO + SAM + ByteTrack</span>
+        <span>GRYPHEYE version 0.02 · Grounding DINO + SAM + ByteTrack</span>
         <span>CLASSIFICATION: UNCLASSIFIED // FOR DEMONSTRATION USE ONLY</span>
       </footer>
     </div>

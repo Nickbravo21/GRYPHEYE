@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ────────────────────────────────────────────────────────────────────────────
-#  Vision Target Tracker — local dev launcher
+#  GRYPHEYE version 0.02 - local dev launcher
 #  Usage:  ./start.sh
 # ────────────────────────────────────────────────────────────────────────────
 set -e
@@ -11,7 +11,7 @@ FRONTEND="$ROOT/frontend"
 
 echo ""
 echo "╔══════════════════════════════════════════╗"
-echo "║      VISION TARGET TRACKER  v1.0         ║"
+echo "║      GRYPHEYE version 0.02               ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
 
