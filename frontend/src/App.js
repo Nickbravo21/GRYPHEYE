@@ -5,7 +5,7 @@ import QueryInput from './components/QueryInput';
 import ToggleControls from './components/ToggleControls';
 import PreviewWindow from './components/PreviewWindow';
 import ResultsDisplay from './components/ResultsDisplay';
-import { detectImage, detectVideo, pollJobStatus } from './services/api';
+import { detectImage, detectVideo, pollJobStatus, API_BASE } from './services/api';
 
 const TARGET_ICON = (
   <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
@@ -24,12 +24,13 @@ export default function App() {
   const [fileType, setFileType] = useState(null); // 'image' | 'video'
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState({
+    highRecall: true,
     useSam: true,
     useTracking: true,
     showBoxes: true,
     showMasks: true,
-    boxThreshold: 0.25,
-    textThreshold: 0.25,
+    boxThreshold: 0.18,
+    textThreshold: 0.18,
   });
 
   const [loading, setLoading] = useState(false);
@@ -66,7 +67,7 @@ export default function App() {
 
         // Poll until done
         const pollResult = await pollJobStatus(job_id, (pct) => setProgress(pct));
-        const videoUrl = `/api/job/${job_id}/result`;
+        const videoUrl = `${API_BASE}/job/${job_id}/result`;
         setResult({
           type: 'video',
           videoUrl,

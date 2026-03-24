@@ -58,30 +58,96 @@ def run_grounding_dino(
     query: str,
     box_threshold: float = 0.25,
     text_threshold: float = 0.25,
+    high_recall: bool = False,
 ) -> Dict[str, Any]:
-    """Return raw detections from Grounding DINO."""
+    """Return raw detections from Grounding DINO.
+
+    When high_recall=True, run a second relaxed-threshold pass and merge
+    detections with NMS to reduce duplicate boxes.
+    """
     registry = ModelRegistry.get()
     text = _format_query(query)
 
-    inputs = registry.gdino_processor(
-        images=image, text=text, return_tensors="pt"
-    ).to(registry.device)
+    def _single_pass(bt: float, tt: float) -> Dict[str, Any]:
+        inputs = registry.gdino_processor(
+            images=image, text=text, return_tensors="pt"
+        ).to(registry.device)
 
-    with torch.no_grad():
-        outputs = registry.gdino_model(**inputs)
+        with torch.no_grad():
+            outputs = registry.gdino_model(**inputs)
 
-    results = registry.gdino_processor.post_process_grounded_object_detection(
-        outputs,
-        inputs.input_ids,
-        threshold=box_threshold,
-        text_threshold=text_threshold,
-        target_sizes=[image.size[::-1]],
-    )[0]
+        results = registry.gdino_processor.post_process_grounded_object_detection(
+            outputs,
+            inputs.input_ids,
+            threshold=bt,
+            text_threshold=tt,
+            target_sizes=[image.size[::-1]],
+        )[0]
+
+        return {
+            "boxes": results["boxes"].cpu().numpy(),
+            "scores": results["scores"].cpu().numpy(),
+            "labels": results["labels"],
+        }
+
+    def _nms_xyxy(boxes: np.ndarray, scores: np.ndarray, iou_thr: float) -> np.ndarray:
+        if len(boxes) == 0:
+            return np.array([], dtype=int)
+        x1, y1, x2, y2 = boxes[:, 0], boxes[:, 1], boxes[:, 2], boxes[:, 3]
+        areas = np.maximum(0.0, x2 - x1) * np.maximum(0.0, y2 - y1)
+        order = scores.argsort()[::-1]
+        keep: List[int] = []
+
+        while order.size > 0:
+            i = int(order[0])
+            keep.append(i)
+            if order.size == 1:
+                break
+
+            rest = order[1:]
+            xx1 = np.maximum(x1[i], x1[rest])
+            yy1 = np.maximum(y1[i], y1[rest])
+            xx2 = np.minimum(x2[i], x2[rest])
+            yy2 = np.minimum(y2[i], y2[rest])
+
+            w = np.maximum(0.0, xx2 - xx1)
+            h = np.maximum(0.0, yy2 - yy1)
+            inter = w * h
+            union = areas[i] + areas[rest] - inter + 1e-8
+            iou = inter / union
+            order = rest[iou <= iou_thr]
+
+        return np.array(keep, dtype=int)
+
+    primary = _single_pass(box_threshold, text_threshold)
+
+    if not high_recall and len(primary["boxes"]) > 0:
+        return primary
+
+    relaxed_box = max(0.05, box_threshold * 0.6)
+    relaxed_text = max(0.05, text_threshold * 0.6)
+    secondary = _single_pass(relaxed_box, relaxed_text)
+
+    if len(primary["boxes"]) == 0 and len(secondary["boxes"]) == 0:
+        return primary
+
+    if len(primary["boxes"]) == 0:
+        return secondary
+
+    if len(secondary["boxes"]) == 0:
+        return primary
+
+    boxes = np.concatenate([primary["boxes"], secondary["boxes"]], axis=0)
+    scores = np.concatenate([primary["scores"], secondary["scores"]], axis=0)
+    labels = list(primary["labels"]) + list(secondary["labels"])
+
+    keep = _nms_xyxy(boxes, scores, iou_thr=0.55)
+    keep = keep[:200]
 
     return {
-        "boxes": results["boxes"].cpu().numpy(),   # xyxy, float32
-        "scores": results["scores"].cpu().numpy(),
-        "labels": results["labels"],               # list[str]
+        "boxes": boxes[keep],
+        "scores": scores[keep],
+        "labels": [labels[i] for i in keep],
     }
 
 
@@ -172,8 +238,15 @@ def process_image(
     show_masks: bool = True,
     box_threshold: float = 0.25,
     text_threshold: float = 0.25,
+    high_recall: bool = True,
 ) -> Dict[str, Any]:
-    det = run_grounding_dino(image, query, box_threshold, text_threshold)
+    det = run_grounding_dino(
+        image,
+        query,
+        box_threshold,
+        text_threshold,
+        high_recall=high_recall,
+    )
     boxes, scores, labels = det["boxes"], det["scores"], det["labels"]
 
     masks: Optional[np.ndarray] = None
@@ -223,6 +296,7 @@ def process_video(
     show_masks: bool = False,
     box_threshold: float = 0.25,
     text_threshold: float = 0.25,
+    high_recall: bool = True,
     progress_callback: Optional[Callable[[int], None]] = None,
 ) -> Dict[str, Any]:
     cap = cv2.VideoCapture(video_path)
@@ -247,7 +321,13 @@ def process_video(
             break
 
         pil = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        det = run_grounding_dino(pil, query, box_threshold, text_threshold)
+        det = run_grounding_dino(
+            pil,
+            query,
+            box_threshold,
+            text_threshold,
+            high_recall=high_recall,
+        )
         boxes, scores, labels = det["boxes"], det["scores"], det["labels"]
 
         tracker_ids: Optional[np.ndarray] = None

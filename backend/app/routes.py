@@ -41,6 +41,7 @@ async def detect_image(
     show_masks: bool = Form(True),
     box_threshold: float = Form(0.25),
     text_threshold: float = Form(0.25),
+    high_recall: bool = Form(True),
 ):
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image (jpg/png).")
@@ -59,6 +60,7 @@ async def detect_image(
         show_masks=show_masks,
         box_threshold=box_threshold,
         text_threshold=text_threshold,
+        high_recall=high_recall,
     )
     return JSONResponse(result)
 
@@ -75,6 +77,7 @@ async def detect_video(
     show_masks: bool = Form(False),
     box_threshold: float = Form(0.25),
     text_threshold: float = Form(0.25),
+    high_recall: bool = Form(True),
 ):
     if not file.content_type or not file.content_type.startswith("video/"):
         raise HTTPException(status_code=400, detail="File must be a video (mp4).")
@@ -109,6 +112,7 @@ async def detect_video(
                 show_masks=show_masks,
                 box_threshold=box_threshold,
                 text_threshold=text_threshold,
+                high_recall=high_recall,
                 progress_callback=_cb,
             )
             _jobs[job_id].update(

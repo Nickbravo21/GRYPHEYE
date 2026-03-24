@@ -1,8 +1,20 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import LoadingState from './LoadingState';
 
 export default function PreviewWindow({ result, loading, progress, fileType, file }) {
+  const previewUrl = useMemo(() => {
+    if (!file) return null;
+    return URL.createObjectURL(file);
+  }, [file]);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   const isEmpty = !result && !loading && !file;
+  const showUploadedPreview = !result && !!file && !!previewUrl;
 
   return (
     <div style={{
@@ -36,6 +48,38 @@ export default function PreviewWindow({ result, loading, progress, fileType, fil
             Upload an image or video to begin detection
           </div>
         </div>
+      )}
+
+      {showUploadedPreview && fileType === 'image' && (
+        <img
+          src={previewUrl}
+          alt="Uploaded preview"
+          style={{
+            maxWidth: '100%',
+            maxHeight: '70vh',
+            objectFit: 'contain',
+            zIndex: 1,
+            border: '1px solid var(--border)',
+            opacity: loading ? 0.5 : 1,
+          }}
+        />
+      )}
+
+      {showUploadedPreview && fileType === 'video' && (
+        <video
+          src={previewUrl}
+          controls
+          autoPlay
+          muted
+          loop
+          style={{
+            maxWidth: '100%',
+            maxHeight: '70vh',
+            zIndex: 1,
+            border: '1px solid var(--border)',
+            opacity: loading ? 0.5 : 1,
+          }}
+        />
       )}
 
       {loading && <LoadingState fileType={fileType} progress={progress} />}

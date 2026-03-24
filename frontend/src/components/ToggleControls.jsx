@@ -73,6 +73,13 @@ export default function ToggleControls({ options, fileType, onChange, disabled }
   return (
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 3, padding: '4px 14px' }}>
       <Toggle
+        label="High Recall Mode"
+        value={options.highRecall}
+        onChange={(v) => onChange('highRecall', v)}
+        disabled={disabled}
+        hint="Extra pass to catch more objects"
+      />
+      <Toggle
         label="Bounding Boxes"
         value={options.showBoxes}
         onChange={(v) => onChange('showBoxes', v)}

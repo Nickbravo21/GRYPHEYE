@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE = process.env.REACT_APP_API_URL || '/api';
+export const API_BASE = process.env.REACT_APP_API_URL || '/api';
 
 /**
  * Run detection on an image file.
@@ -14,8 +14,9 @@ export async function detectImage(file, query, options = {}) {
   fd.append('show_masks', options.showMasks ?? true);
   fd.append('box_threshold', options.boxThreshold ?? 0.25);
   fd.append('text_threshold', options.textThreshold ?? 0.25);
+  fd.append('high_recall', options.highRecall ?? true);
 
-  const { data } = await axios.post(`${BASE}/detect-image`, fd, {
+  const { data } = await axios.post(`${API_BASE}/detect-image`, fd, {
     timeout: 120_000,
   });
   return data;
@@ -34,8 +35,9 @@ export async function detectVideo(file, query, options = {}) {
   fd.append('show_masks', options.showMasks ?? false);
   fd.append('box_threshold', options.boxThreshold ?? 0.25);
   fd.append('text_threshold', options.textThreshold ?? 0.25);
+  fd.append('high_recall', options.highRecall ?? true);
 
-  const { data } = await axios.post(`${BASE}/detect-video`, fd, {
+  const { data } = await axios.post(`${API_BASE}/detect-video`, fd, {
     timeout: 30_000,
   });
   return data;
@@ -49,7 +51,7 @@ export async function pollJobStatus(jobId, progressCallback, intervalMs = 2000) 
   return new Promise((resolve, reject) => {
     const poll = async () => {
       try {
-        const { data } = await axios.get(`${BASE}/job/${jobId}/status`);
+        const { data } = await axios.get(`${API_BASE}/job/${jobId}/status`);
         if (progressCallback) progressCallback(data.progress || 0);
 
         if (data.status === 'done') return resolve(data);
